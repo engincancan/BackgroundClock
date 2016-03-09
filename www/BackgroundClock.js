@@ -6,18 +6,21 @@ var BackgroundClock = function() {
 
     var methods = [
         'init',
-        'settime',
-        'gettime'
+        'gettime',
+        'finish',
+        'getstatus',
+        'updatetime'
     ];
 
     var execCall = function(methodName, args) {
         var success = log,
             fail = log;
-        if (!!args && args.length && args.length > 1) {
-            success = args.splice(0, 1);
-            fail = args.splice(0, 1);
+        var argsArray = [].slice.call(args);
+        if (!!argsArray && argsArray.length && argsArray.length > 2) {
+            success = argsArray.splice(0, 1)[0];
+            fail = argsArray.splice(0, 1)[0];
         }
-        exec(success, fail, "BackgroundClock", methodName, Array.prototype.slice.call(args || []));
+        exec(success, fail, "BackgroundClockPlugin", methodName, argsArray || []);
     };
 
     var self = this;
