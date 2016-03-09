@@ -6,9 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 
-
-import com.example.hello.R;
-
 import java.util.Date;
 
 
