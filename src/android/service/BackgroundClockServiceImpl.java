@@ -117,11 +117,17 @@ public class BackgroundClockServiceImpl extends Service implements BackgroundClo
     }
 
     public void updateTime(long newTime) {
-        currentTime.setTime(newTime);
+        if(!isResume){
+            isResume = true;
+            setTime(newTime);
+        } else {
+            currentTime.setTime(newTime);
+        }
     }
 
 
     public void finish() {
+        this.getApplicationContext().stopService(new Intent(this, BackgroundClockServiceImpl.class));
         stopSelf();
         isResume = false;
     }

@@ -14,6 +14,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 
 /**
@@ -36,37 +37,58 @@ public class BackgroundClockPlugin extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
-        if (isMyServiceRunning() && mBoundService == null) {
+        boolean isServiceRunning = isMyServiceRunning();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("isServiceRunning", isServiceRunning);
+        if (isServiceRunning && mBoundService == null) {
             stopBackgroundClockService();
-            callbackContext.error("mBoundService is null");
+            jsonObject.put("message", "mBoundService is null");
+            jsonObject.put("success", false);
+            callbackContext.error(jsonObject);
             return false;
         }
 
-        if (action.equals(INIT)) {
-            long date = args.getLong(0);
-            final int interval = args.getInt(1);
-            startBackgroundClockService(date, interval);
-            callbackContext.success("Success");
-            return true;
-        } else if (action.equals(FINISH)) {
-            mBoundService.finish();
-            callbackContext.success("Timer Canceled");
-            return true;
-        } else if (action.equals(UPDATETIME)) {
-            long date = args.getLong(0);
-            mBoundService.updateTime(date);
-            callbackContext.success("Timer Canceled");
-            return true;
-        } else if (action.equals(GETTIME)) {
-            long currentTime = mBoundService.getTime();
-            callbackContext.success(String.valueOf(currentTime));
-            return true;
-        } else if (action.equals(GETSTATUS)) {
-            boolean currentTime = isMyServiceRunning() && mBoundService.getStatus();
-            callbackContext.success(String.valueOf(currentTime));
-            return true;
+        if (isServiceRunning) {
+            if (action.equals(FINISH)) {
+                mBoundService.finish();
+                jsonObject.put("message", "Timer Canceled");
+                jsonObject.put("success", true);
+                callbackContext.success(jsonObject);
+                return true;
+            } else if (action.equals(UPDATETIME)) {
+                long date = args.getLong(0);
+                mBoundService.updateTime(date);
+                jsonObject.put("message", "Success");
+                jsonObject.put("success", true);
+                callbackContext.success(jsonObject);
+                return true;
+            } else if (action.equals(GETTIME)) {
+                long currentTime = mBoundService.getTime();
+                jsonObject.put("currentTime", String.valueOf(currentTime));
+                jsonObject.put("success", true);
+                callbackContext.success(jsonObject);
+                return true;
+            } else if (action.equals(GETSTATUS)) {
+                boolean status = isMyServiceRunning() && mBoundService.getStatus();
+                jsonObject.put("success", status);
+                callbackContext.success(jsonObject);
+                return true;
+            }
+
+        } else {
+            if (action.equals(INIT)) {
+                long date = args.getLong(0);
+                final int interval = args.getInt(1);
+                startBackgroundClockService(date, interval);
+                jsonObject.put("message", "Service started");
+                jsonObject.put("success", true);
+                callbackContext.success(jsonObject);
+                return true;
+            }
         }
-        callbackContext.error("Unable to Find Suitable Action");
+        jsonObject.put("message", "Unable to Find Suitable Action");
+        jsonObject.put("success", false);
+        callbackContext.error(jsonObject);
         return false;
     }
 
